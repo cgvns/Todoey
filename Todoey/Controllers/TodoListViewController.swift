@@ -10,7 +10,7 @@ import UIKit
 import RealmSwift
 
 class TodoListViewController : UITableViewController {
-
+    
     var toDoItems: Results<Item>?
     let realm = try! Realm()
     var selectedCategory : Category? {
@@ -73,7 +73,9 @@ class TodoListViewController : UITableViewController {
         var textField = UITextField()
         
         let alert = UIAlertController(title: "Add New Todey Item", message: "", preferredStyle: .alert)
-        
+        let cancel = UIAlertAction(title: "Cancel", style: .default) { (action) in
+            self.dismiss(animated: true, completion: nil)
+        }
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             //what will happen when user clicks the add item button on UIView
         
@@ -82,6 +84,9 @@ class TodoListViewController : UITableViewController {
                 try self.realm.write {
                     let newItem = Item()
                 newItem.title = textField.text!
+                newItem.dateCreated = Date()
+
+
                 currentCategory.items.append(newItem)
                     }
                     
@@ -96,7 +101,9 @@ class TodoListViewController : UITableViewController {
             alertTextField.placeholder = "Create new item"
             textField = alertTextField
         }
+        
         alert.addAction(action)
+        alert.addAction(cancel)
         
         present(alert, animated: true, completion: nil)
 
@@ -131,13 +138,17 @@ class TodoListViewController : UITableViewController {
 //
     
     
-    
+}
 //MARK - Search Bar Methods
 
-//extension TodoListViewController: UISearchBarDelegate {
-//
-//    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-//
+extension TodoListViewController: UISearchBarDelegate {
+
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+
+        toDoItems = toDoItems?.filter("title CONTAINS[cd] %@", searchBar.text).sorted(byKeyPath: "dateCreated", ascending: true)
+        
+        tableView.reloadData()
+        
 //        let request : NSFetchRequest<Item> = Item.fetchRequest()
 //
 //        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
@@ -145,39 +156,18 @@ class TodoListViewController : UITableViewController {
 //        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
 //
 //        loadItems(with: request, predicate: predicate)
-//
-//    }
-//
-//    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-//        if searchBar.text?.count == 0 {
-//            loadItems()
-//
-//            DispatchQueue.main.async {
-//                searchBar.resignFirstResponder()
-//            }
-//
-//        }
-//    }
-//}
+
+    }
+
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            loadItems()
+
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+
+        }
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
